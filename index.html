@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DuPont Analyser - Return on Equity Explained</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* Design tokens */
+    :root {
+      --color-page-bg: #0F0E0C;
+      --color-surface: #1A1815;
+      --color-raised: #242018;
+      --color-inset: #0A0908;
+      --color-primary: #C8860A;
+      --color-primary-hover: #E09B12;
+      --color-primary-dim: #7A520A;
+      --color-accent: #4ECDC4;
+      --color-accent-dim: #2A7A76;
+      --color-positive: #5A9E6F;
+      --color-negative: #C0564A;
+      --color-info: #4E8EC8;
+      --neutral-50: #FAF7F2;
+      --neutral-100: #F0EBE0;
+      --neutral-200: #D8D0C2;
+      --neutral-300: #B8AD9A;
+      --neutral-400: #968A76;
+      --neutral-500: #756A58;
+      --neutral-600: #534B3E;
+      --neutral-700: #362F25;
+      --neutral-800: #201B14;
+      --neutral-900: #0F0E0C;
+      --text-primary: #FAF7F2;
+      --text-secondary: #B8AD9A;
+      --text-muted: #756A58;
+      --text-inverse: #0F0E0C;
+      --text-disabled: #534B3E;
+      --text-accent: #4ECDC4;
+      --text-amber: #C8860A;
+      --font-display: "Playfair Display", Georgia, serif;
+      --font-body: "IBM Plex Sans", system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", "Courier New", monospace;
+      --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-exit: cubic-bezier(0.55, 0, 1, 0.45);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--color-page-bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      line-height: 1.65;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    /* Navigation */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-width: 0;
+      height: 52px;
+      padding: 0 24px;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--neutral-700);
+    }
+
+    .nav-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .wordmark {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    .creator-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 150ms var(--ease-enter);
+      white-space: nowrap;
+    }
+
+    .creator-link:hover,
+    .creator-link:focus-visible {
+      color: var(--text-accent);
+      outline: none;
+    }
+
+    .creator-link:active {
+      color: var(--text-primary);
+    }
+
+    .creator-link:focus-visible {
+      box-shadow: 0 0 0 2px var(--color-accent);
+      outline-offset: 4px;
+    }
+
+    .linkedin-mark {
+      display: inline-grid;
+      place-items: center;
+      width: 18px;
+      height: 18px;
+      border: 1px solid rgba(78, 205, 196, 0.45);
+      background: rgba(78, 205, 196, 0.1);
+      color: var(--text-accent);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .model-toggle {
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+      gap: 4px;
+      min-height: 34px;
+      padding: 3px;
+      border: 1px solid var(--neutral-700);
+      border-radius: 100px;
+      background: var(--color-inset);
+    }
+
+    .model-toggle button {
+      position: relative;
+      border: 0;
+      border-radius: 100px;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: color 150ms var(--ease-enter), transform 80ms var(--ease-enter);
+    }
+
+    .model-toggle button::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 4px;
+      height: 2px;
+      background: transparent;
+      transition: background 150ms var(--ease-enter);
+    }
+
+    .model-toggle button.is-active {
+      color: var(--text-primary);
+    }
+
+    .model-toggle button.is-active::after {
+      background: var(--color-primary);
+    }
+
+    .model-toggle button:active,
+    .preset-btn:active,
+    .reset-btn:active {
+      transform: translateY(1px);
+    }
+
+    .model-toggle button:focus-visible,
+    .accordion-toggle:focus-visible,
+    .preset-btn:focus-visible,
+    .reset-btn:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 3px;
+    }
+
+    /* Page layout */
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+      min-width: 0;
+      min-height: calc(100vh - 52px);
+      background: var(--color-page-bg);
+    }
+
+    .col {
+      min-width: 0;
+      max-height: calc(100vh - 52px);
+      overflow-y: auto;
+      padding: 32px;
+      background: var(--color-surface);
+      border-top: 2px solid var(--color-primary);
+      border-right: 1px solid var(--neutral-700);
+    }
+
+    .col:last-child {
+      border-right: 0;
+    }
+
+    .accordion-toggle {
+      display: none;
+      width: 100%;
+      margin: 0 0 18px;
+      border: 1px solid var(--neutral-700);
+      border-left: 2px solid var(--color-primary);
+      background: var(--color-inset);
+      color: var(--text-primary);
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-align: left;
+      text-transform: uppercase;
+    }
+
+    .accordion-toggle::after {
+      content: "Open";
+      float: right;
+      color: var(--text-muted);
+    }
+
+    .col.is-open .accordion-toggle::after {
+      content: "Close";
+      color: var(--text-amber);
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    h1,
+    h2 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: 24px;
+      line-height: 1.35;
+      overflow-wrap: break-word;
+    }
+
+    h2 {
+      font-size: 20px;
+      line-height: 1.5;
+    }
+
+    h3 {
+      margin-top: 28px;
+      margin-bottom: 8px;
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      margin: 0 0 16px;
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .sub-badge,
+    .chip,
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      border-radius: 2px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .sub-badge {
+      margin: 12px 0 28px;
+      padding: 7px 9px;
+      border: 1px solid rgba(200, 134, 10, 0.3);
+      background: rgba(200, 134, 10, 0.12);
+      color: var(--text-amber);
+    }
+
+    .sub-badge.live {
+      border-color: rgba(78, 205, 196, 0.35);
+      background: rgba(78, 205, 196, 0.1);
+      color: var(--text-accent);
+    }
+
+    .chip {
+      padding: 5px 7px;
+      border: 1px solid rgba(200, 134, 10, 0.3);
+      background: rgba(200, 134, 10, 0.12);
+      color: var(--text-amber);
+    }
+
+    .tag {
+      flex: 0 0 auto;
+      min-width: 74px;
+      justify-content: center;
+      padding: 6px 8px;
+    }
+
+    .tag.correct {
+      border: 1px solid rgba(90, 158, 111, 0.35);
+      background: rgba(90, 158, 111, 0.12);
+      color: var(--color-positive);
+    }
+
+    .tag.myth {
+      border: 1px solid rgba(192, 86, 74, 0.35);
+      background: rgba(192, 86, 74, 0.12);
+      color: var(--color-negative);
+    }
+
+    .footer-note {
+      margin-top: 26px;
+      padding-top: 18px;
+      border-top: 1px solid var(--neutral-700);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-style: italic;
+      line-height: 1.55;
+    }
+
+    /* Formula column */
+    .formula-display {
+      display: grid;
+      grid-template-columns: 1.15fr auto 1fr auto 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 24px;
+      padding: 16px;
+      border: 1px solid var(--neutral-700);
+      background: var(--color-inset);
+    }
+
+    .formula-term {
+      display: grid;
+      place-items: center;
+      min-height: 60px;
+      border: 1px solid var(--color-primary);
+      background: var(--color-raised);
+      color: var(--text-amber);
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      text-align: center;
+    }
+
+    .formula-term.result {
+      min-height: 68px;
+      color: var(--text-accent);
+      font-size: 28px;
+    }
+
+    .formula-term.is-hot {
+      border-color: var(--color-accent);
+      background: rgba(78, 205, 196, 0.08);
+      color: var(--text-accent);
+    }
+
+    .formula-symbol {
+      color: var(--neutral-500);
+      font-family: var(--font-mono);
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .proof-block,
+    .five-step-panel {
+      margin: 0 0 24px;
+      padding: 16px;
+      border: 1px solid var(--neutral-700);
+      background: var(--color-inset);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .proof-block .equals {
+      color: var(--text-accent);
+    }
+
+    .five-step-panel {
+      display: none;
+      border-color: rgba(78, 205, 196, 0.35);
+    }
+
+    body[data-model="5"] .five-step-panel {
+      display: block;
+    }
+
+    body[data-model="5"] .three-step-only {
+      display: none;
+    }
+
+    body[data-model="3"] .five-step-formula {
+      display: none;
+    }
+
+    .formula-display.five-step-formula {
+      grid-template-columns: 1.1fr auto 0.9fr auto 0.9fr auto 0.9fr auto 0.9fr auto 0.9fr;
+      gap: 5px;
+    }
+
+    .formula-display.five-step-formula .formula-term {
+      min-height: 48px;
+      font-size: 14px;
+    }
+
+    .formula-display.five-step-formula .formula-term.result {
+      min-height: 54px;
+      font-size: 20px;
+    }
+
+    .component-card {
+      margin: 0 0 16px;
+      padding: 16px;
+      border: 1px solid var(--neutral-700);
+      border-top: 2px solid var(--color-primary);
+      background: var(--color-raised);
+    }
+
+    .component-card h3 {
+      margin-top: 12px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-style: normal;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .metric-formula {
+      margin: 8px 0 12px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .assumption-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .assumption-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--neutral-700);
+      background: var(--color-inset);
+    }
+
+    .assumption-row p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    /* Calculator */
+    .instruction {
+      margin-top: -14px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .roe-panel {
+      margin: 0 0 24px;
+      padding: 20px;
+      border: 1px solid var(--neutral-700);
+      border-top: 2px solid var(--color-accent);
+      background: var(--color-inset);
+    }
+
+    .roe-label {
+      display: block;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .roe-value {
+      display: block;
+      margin-top: 8px;
+      color: var(--text-accent);
+      font-family: var(--font-mono);
+      font-size: clamp(48px, 7vw, 64px);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      transition: color 250ms var(--ease-spring), transform 300ms var(--ease-spring);
+    }
+
+    .roe-value.bump {
+      transform: translateY(-2px);
+    }
+
+    .contribution-wrap {
+      margin: 0 0 26px;
+    }
+
+    .contribution-bar {
+      display: flex;
+      width: 100%;
+      height: 8px;
+      overflow: hidden;
+      border: 1px solid var(--neutral-700);
+      background: var(--neutral-800);
+    }
+
+    .contribution-segment {
+      min-width: 3px;
+      height: 100%;
+      transition: width 400ms var(--ease-spring);
+    }
+
+    .bar-npm {
+      background: var(--color-primary);
+    }
+
+    .bar-at {
+      background: var(--color-accent);
+    }
+
+    .bar-em {
+      background: var(--neutral-300);
+    }
+
+    .bar-labels {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 9px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .bar-labels span:nth-child(1) {
+      color: var(--text-amber);
+    }
+
+    .bar-labels span:nth-child(2) {
+      color: var(--text-accent);
+      text-align: center;
+    }
+
+    .bar-labels span:nth-child(3) {
+      color: var(--neutral-300);
+      text-align: right;
+    }
+
+    .slider-group {
+      margin: 0 0 22px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--neutral-700);
+      transition: border-color 180ms var(--ease-enter);
+    }
+
+    .slider-group.is-hot {
+      border-bottom-color: var(--color-primary);
+    }
+
+    .slider-head {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .live-value {
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1;
+      text-align: right;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--neutral-700);
+      border-radius: 0;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--color-primary);
+      border: 2px solid var(--color-primary-hover);
+      border-radius: 0;
+      cursor: pointer;
+      transition: background 150ms var(--ease-enter), border-color 150ms var(--ease-enter);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      background: var(--color-primary-hover);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: var(--color-primary);
+      border: 2px solid var(--color-primary-hover);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    input[type="range"]:focus-visible::-webkit-slider-thumb {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+
+    input[type="range"]:focus-visible {
+      box-shadow: 0 0 0 2px var(--color-accent);
+    }
+
+    .range-limits {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .warning {
+      display: none;
+      margin: 10px 0 0;
+      color: var(--color-negative);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .narrative-box {
+      margin: 0 0 18px;
+      padding: 16px;
+      border: 1px solid var(--neutral-700);
+      background: var(--color-inset);
+    }
+
+    .narrative-box p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .reset-btn,
+    .preset-btn {
+      border-radius: 0;
+      background: transparent;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: color 150ms var(--ease-enter), border-color 150ms var(--ease-enter), background 150ms var(--ease-enter);
+    }
+
+    .reset-btn {
+      width: 100%;
+      margin: 0 0 16px;
+      padding: 12px 16px;
+      border: 1px solid var(--color-negative);
+      color: var(--color-negative);
+      font-size: 11px;
+    }
+
+    .reset-btn:hover {
+      background: rgba(192, 86, 74, 0.08);
+    }
+
+    .presets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .preset-btn {
+      min-height: 44px;
+      padding: 8px;
+      border: 1px solid var(--neutral-700);
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--color-primary);
+      color: var(--text-amber);
+      background: rgba(200, 134, 10, 0.08);
+    }
+
+    /* Responsive layout */
+    @media (max-width: 900px) {
+      .columns {
+        grid-template-columns: 1fr 1fr;
+        min-height: 0;
+      }
+
+      .col {
+        max-height: none;
+        overflow-y: visible;
+      }
+
+      .col-interactive {
+        grid-column: 1 / -1;
+        border-right: 0;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .top-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 8px;
+        height: 116px;
+        width: 100vw;
+        max-width: 100vw;
+        padding: 10px 14px;
+        overflow: hidden;
+      }
+
+      .nav-actions {
+        flex-wrap: wrap;
+        gap: 8px 12px;
+      }
+
+      .wordmark {
+        max-width: 170px;
+        font-size: 16px;
+      }
+
+      .creator-link {
+        font-size: 10px;
+      }
+
+      .model-toggle {
+        position: static;
+        transform: none;
+      }
+
+      .model-toggle button {
+        padding: 6px 8px;
+        font-size: 10px;
+      }
+
+      .columns {
+        display: block;
+        width: 100vw;
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+
+      .col {
+        width: 100vw;
+        max-width: 100vw;
+        padding: 20px;
+        overflow-x: hidden;
+        border-right: 0;
+        border-bottom: 1px solid var(--neutral-700);
+      }
+
+      .accordion-toggle {
+        display: block;
+      }
+
+      .accordion-toggle,
+      .column-body {
+        width: min(320px, calc(100vw - 40px));
+        max-width: min(320px, calc(100vw - 40px));
+      }
+
+      .column-body {
+        display: none;
+      }
+
+      .col.is-open .column-body {
+        display: block;
+      }
+
+      .formula-display {
+        grid-template-columns: 1fr;
+      }
+
+      .formula-symbol {
+        padding: 2px 0;
+      }
+
+      .assumption-row {
+        grid-template-columns: 1fr;
+      }
+
+      .presets {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .accordion-toggle,
+      .column-body {
+        width: min(280px, calc(100vw - 40px));
+        max-width: min(280px, calc(100vw - 40px));
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+<body data-model="3">
+  <nav class="top-nav" aria-label="Primary">
+    <div class="wordmark">DuPont Analyser</div>
+    <div class="nav-actions">
+      <a class="creator-link" href="https://www.linkedin.com/in/kaustubh-barve/" target="_blank" rel="noopener noreferrer" aria-label="Made by Kaustubh Barve on LinkedIn">
+        <span class="linkedin-mark" aria-hidden="true">in</span>
+        <span>Made by Kaustubh Barve</span>
+      </a>
+      <div class="model-toggle" aria-label="Model view">
+        <button type="button" class="is-active" data-model-button="3" aria-pressed="true">3-Step</button>
+        <button type="button" data-model-button="5" aria-pressed="false">5-Step</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="columns">
+    <section class="col col-origin is-open">
+      <button class="accordion-toggle" type="button" aria-expanded="true">Origin</button>
+      <div class="column-body">
+        <h1>The Salesman Who Built Modern Finance</h1>
+        <div class="sub-badge">Origin &middot; 1912</div>
+
+        <h3>Before the Formula</h3>
+        <p>DuPont Corporation, 1909. The company makes explosives, dyes, and paints. Its divisions run as semi-independent empires. Nobody knows which ones are actually efficient. Frank Donaldson Brown - an electrical engineer, not an accountant - is handed the problem.</p>
+
+        <h3>The 1912 Report</h3>
+        <p>In 1912, Brown filed an internal efficiency report at DuPont's Wilmington headquarters. Inside it was a mathematical observation: Return on Assets could be decomposed into two components. Net Profit Margin multiplied by Asset Turnover. Cancel the Revenue terms. You get Net Income over Total Assets. ROA - from two manageable ratios. The original DuPont model had been born.</p>
+
+        <h3>General Motors Changes Everything</h3>
+        <p>In 1918, DuPont acquired 23% of General Motors. GM was struggling. Brown was sent in. He recognized that ROA alone did not capture how debt was amplifying returns to shareholders. He added the third component: the Equity Multiplier. Total Assets divided by Shareholders' Equity. Now the formula reached all the way to ROE - what shareholders actually cared about.</p>
+
+        <h3>From One Company to the World</h3>
+        <p>Brown eventually became GM's treasurer in 1921 and joined its executive board in 1924, working alongside Alfred P. Sloan. The framework spread to industry analysts. By the 1950s it was a standard corporate performance tool. Today it is taught in every MBA programme.</p>
+
+        <h3>The 5-Step Extension</h3>
+        <p>A later academic elaboration split NPM into operating and tax components, yielding a 5-component model: Tax Burden &times; Interest Burden &times; EBIT Margin &times; Asset Turnover &times; Equity Multiplier. Brown's original 3-step remains the most widely used in practice.</p>
+
+        <div class="footer-note">Brown died in 1965. His formula is still in every financial model built today.</div>
+      </div>
+    </section>
+
+    <section class="col col-formula is-open">
+      <button class="accordion-toggle" type="button" aria-expanded="true">Formula</button>
+      <div class="column-body">
+        <h1>How ROE Is Built</h1>
+        <div class="sub-badge three-step-only">3-Step Model</div>
+        <div class="sub-badge live five-step-formula">5-Step Extension</div>
+
+        <div class="formula-display three-step-only" aria-label="Three step DuPont formula">
+          <div class="formula-term result" id="formula-roe">ROE</div>
+          <div class="formula-symbol">=</div>
+          <div class="formula-term" id="formula-npm">NPM</div>
+          <div class="formula-symbol">&times;</div>
+          <div class="formula-term" id="formula-at">AT</div>
+          <div class="formula-symbol">&times;</div>
+          <div class="formula-term" id="formula-em">EM</div>
+        </div>
+
+        <div class="formula-display five-step-formula" aria-label="Five step DuPont formula">
+          <div class="formula-term result">ROE</div>
+          <div class="formula-symbol">=</div>
+          <div class="formula-term">TB</div>
+          <div class="formula-symbol">&times;</div>
+          <div class="formula-term">IB</div>
+          <div class="formula-symbol">&times;</div>
+          <div class="formula-term">OM</div>
+          <div class="formula-symbol">&times;</div>
+          <div class="formula-term">AT</div>
+          <div class="formula-symbol">&times;</div>
+          <div class="formula-term">EM</div>
+        </div>
+
+        <div class="proof-block">
+          ROE = (Net Income / Revenue) &times; (Revenue / Total Assets) &times; (Total Assets / Equity)<br>
+          <span class="equals">= Net Income / Equity</span>
+        </div>
+
+        <div class="five-step-panel">
+          5-Step: ROE = Tax Burden &times; Interest Burden &times; Operating Margin &times; Asset Turnover &times; Equity Multiplier.<br>
+          Tax Burden = Net Income / EBT. Interest Burden = EBT / EBIT. Operating Margin = EBIT / Revenue. The extension isolates tax and financing effects inside Net Profit Margin.
+        </div>
+
+        <div class="component-card">
+          <span class="chip">Profitability</span>
+          <h3>Net Profit Margin</h3>
+          <div class="metric-formula">Net Income / Revenue</div>
+          <p><strong>What it measures:</strong> How much of each unit of revenue survives all expenses.</p>
+          <p><strong>Interpretation:</strong> A 15% NPM means the firm keeps &#8377;15 of every &#8377;100 in revenue.</p>
+          <p><strong>Industry note:</strong> Pharma: 15-25%. Retail grocery: 1-3%. Both can have excellent ROE.</p>
+        </div>
+
+        <div class="component-card">
+          <span class="chip">Efficiency</span>
+          <h3>Asset Turnover</h3>
+          <div class="metric-formula">Revenue / Total Assets</div>
+          <p><strong>What it measures:</strong> How hard the firm's asset base is working to generate revenue.</p>
+          <p><strong>Interpretation:</strong> A 2.0x AT means &#8377;2 of revenue for every &#8377;1 of assets deployed.</p>
+          <p><strong>Industry note:</strong> Walmart: approximately 2.5x. Apple: approximately 0.8x. Context is everything.</p>
+        </div>
+
+        <div class="component-card">
+          <span class="chip">Leverage</span>
+          <h3>Equity Multiplier</h3>
+          <div class="metric-formula">Total Assets / Shareholders' Equity</div>
+          <p><strong>What it measures:</strong> The degree to which assets are financed by debt versus equity.</p>
+          <p><strong>Interpretation:</strong> An EM of 3.0 means 2/3 of assets are debt-financed. ROE is amplified - and so is risk. Interest payments are fixed. Losses are amplified too.</p>
+        </div>
+
+        <h3>What People Get Wrong</h3>
+        <div class="assumption-list">
+          <div class="assumption-row">
+            <span class="tag correct">Correct</span>
+            <p>A high ROE driven primarily by NPM improvement is generally more sustainable than one driven by leverage increases. Margin improvement usually points to better pricing power, cost discipline, or operating efficiency.</p>
+          </div>
+          <div class="assumption-row">
+            <span class="tag correct">Correct</span>
+            <p>Asset Turnover varies substantially by industry. Retail, including Walmart-style models, runs high turnover with thin margins; pharma often runs low turnover with fat margins.</p>
+          </div>
+          <div class="assumption-row">
+            <span class="tag correct">Correct</span>
+            <p>DuPont analysis is useful for cross-company comparison within the same industry. The comparison loses meaning when structural business models differ too much.</p>
+          </div>
+          <div class="assumption-row">
+            <span class="tag correct">Correct</span>
+            <p>Decomposition reveals which lever management has actually pulled. It separates profitability, asset efficiency, and leverage instead of treating ROE as one opaque number.</p>
+          </div>
+          <div class="assumption-row">
+            <span class="tag myth">Myth</span>
+            <p><strong>High ROE always signals a strong company.</strong> A firm with 5% NPM and 3x leverage can show 30% ROE. The leverage inflates the number and raises bankruptcy risk.</p>
+          </div>
+          <div class="assumption-row">
+            <span class="tag myth">Myth</span>
+            <p><strong>ROE equals profitability.</strong> ROE is a shareholder return metric. A company with thin margins and heavy debt can show excellent ROE while operating on the edge.</p>
+          </div>
+          <div class="assumption-row">
+            <span class="tag myth">Myth</span>
+            <p><strong>DuPont analysis only applies to manufacturing companies.</strong> It is universally applicable. It is used in banking, pharma, retail, and technology.</p>
+          </div>
+          <div class="assumption-row">
+            <span class="tag myth">Myth</span>
+            <p><strong>Increasing any component always improves the firm.</strong> Increasing the Equity Multiplier raises ROE mathematically, but it also increases financial risk and interest burden.</p>
+          </div>
+          <div class="assumption-row">
+            <span class="tag myth">Myth</span>
+            <p><strong>The higher the Asset Turnover, the better managed the company.</strong> Turnover benchmarks are industry-specific. A 0.5x turnover may be normal in heavy industry and alarming in retail.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="col col-interactive is-open">
+      <button class="accordion-toggle" type="button" aria-expanded="true">Calculator</button>
+      <div class="column-body">
+        <h1>Change It. See It.</h1>
+        <div class="sub-badge live">Live Calculator</div>
+        <p class="instruction">Adjust one driver at a time. The ROE bridge recalculates instantly.</p>
+
+        <div class="roe-panel" aria-live="polite">
+          <span class="roe-label">ROE</span>
+          <span class="roe-value" id="roe-value">24.0%</span>
+        </div>
+
+        <div class="contribution-wrap">
+          <div class="contribution-bar" aria-label="Component contribution bar">
+            <div class="contribution-segment bar-npm" id="bar-npm"></div>
+            <div class="contribution-segment bar-at" id="bar-at"></div>
+            <div class="contribution-segment bar-em" id="bar-em"></div>
+          </div>
+          <div class="bar-labels">
+            <span id="label-npm">NPM</span>
+            <span id="label-at">AT</span>
+            <span id="label-em">EM</span>
+          </div>
+        </div>
+
+        <div class="slider-group" id="group-npm">
+          <div class="slider-head">
+            <label class="chip" for="slider-npm">Profitability</label>
+            <span class="live-value" id="val-npm">8.0%</span>
+          </div>
+          <input type="range" id="slider-npm" min="0.1" max="30" step="0.1" value="8" data-component="npm">
+          <div class="range-limits">
+            <span>0.1%</span>
+            <span>30.0%</span>
+          </div>
+        </div>
+
+        <div class="slider-group" id="group-at">
+          <div class="slider-head">
+            <label class="chip" for="slider-at">Efficiency</label>
+            <span class="live-value" id="val-at">1.50x</span>
+          </div>
+          <input type="range" id="slider-at" min="0.1" max="5.0" step="0.05" value="1.5" data-component="at">
+          <div class="range-limits">
+            <span>0.10x</span>
+            <span>5.00x</span>
+          </div>
+        </div>
+
+        <div class="slider-group" id="group-em">
+          <div class="slider-head">
+            <label class="chip" for="slider-em">Leverage</label>
+            <span class="live-value" id="val-em">2.0x</span>
+          </div>
+          <input type="range" id="slider-em" min="1.0" max="6.0" step="0.1" value="2.0" data-component="em">
+          <div class="range-limits">
+            <span>1.0x</span>
+            <span>6.0x</span>
+          </div>
+          <div class="warning" id="em-warning">&#9888; High leverage - financial risk increases</div>
+        </div>
+
+        <div class="narrative-box">
+          <p id="narrative">ROE is healthy. Check whether operations or leverage are doing most of the work.</p>
+        </div>
+
+        <button class="reset-btn" id="reset-btn" type="button">Reset to Default</button>
+
+        <div class="presets" aria-label="Preset scenarios">
+          <button class="preset-btn" type="button" data-npm="2.5" data-at="2.8" data-em="2.5">Retail Co.</button>
+          <button class="preset-btn" type="button" data-npm="20" data-at="0.7" data-em="1.8">Pharma Co.</button>
+          <button class="preset-btn" type="button" data-npm="6" data-at="1.2" data-em="4.5">Leveraged Co.</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* Calculator and interface logic */
+    const sliderNpm = document.getElementById("slider-npm");
+    const sliderAt = document.getElementById("slider-at");
+    const sliderEm = document.getElementById("slider-em");
+    const roeValue = document.getElementById("roe-value");
+    const valNpm = document.getElementById("val-npm");
+    const valAt = document.getElementById("val-at");
+    const valEm = document.getElementById("val-em");
+    const barNpm = document.getElementById("bar-npm");
+    const barAt = document.getElementById("bar-at");
+    const barEm = document.getElementById("bar-em");
+    const labelNpm = document.getElementById("label-npm");
+    const labelAt = document.getElementById("label-at");
+    const labelEm = document.getElementById("label-em");
+    const formulaRoe = document.getElementById("formula-roe");
+    const formulaTerms = {
+      npm: document.getElementById("formula-npm"),
+      at: document.getElementById("formula-at"),
+      em: document.getElementById("formula-em")
+    };
+    const sliderGroups = {
+      npm: document.getElementById("group-npm"),
+      at: document.getElementById("group-at"),
+      em: document.getElementById("group-em")
+    };
+    const emWarning = document.getElementById("em-warning");
+    const narrative = document.getElementById("narrative");
+    const resetBtn = document.getElementById("reset-btn");
+    const presetBtns = document.querySelectorAll(".preset-btn");
+    const modelButtons = document.querySelectorAll("[data-model-button]");
+    const accordionButtons = document.querySelectorAll(".accordion-toggle");
+
+    const defaults = {
+      npm: 8,
+      at: 1.5,
+      em: 2
+    };
+
+    const previous = {
+      npm: defaults.npm,
+      at: defaults.at,
+      em: defaults.em
+    };
+
+    function calculateROE(npm, at, em) {
+      return (npm / 100) * at * em * 100;
+    }
+
+    function updateContributionBar(npm, at, em) {
+      const npmLog = Math.log(Math.max(npm / 100, 0.001));
+      const atLog = Math.log(Math.max(at, 0.001));
+      const emLog = Math.log(Math.max(em, 0.001));
+      const total = Math.abs(npmLog) + Math.abs(atLog) + Math.abs(emLog);
+      const npmPct = total === 0 ? 33.3 : Math.abs(npmLog) / total * 100;
+      const atPct = total === 0 ? 33.3 : Math.abs(atLog) / total * 100;
+      const emPct = total === 0 ? 33.3 : Math.abs(emLog) / total * 100;
+
+      barNpm.style.width = `${npmPct.toFixed(1)}%`;
+      barAt.style.width = `${atPct.toFixed(1)}%`;
+      barEm.style.width = `${emPct.toFixed(1)}%`;
+      labelNpm.textContent = `NPM ${npmPct.toFixed(0)}%`;
+      labelAt.textContent = `AT ${atPct.toFixed(0)}%`;
+      labelEm.textContent = `EM ${emPct.toFixed(0)}%`;
+    }
+
+    function updateNarrative(changedComponent, npm, at, em, roe, direction) {
+      let text = "ROE sits in the middle zone. Inspect margin, turnover, and leverage before judging quality.";
+
+      if (em > 4) {
+        text = "Equity Multiplier above 4x - lenders and analysts will scrutinize this closely.";
+      } else if (roe > 25) {
+        text = "ROE is elevated. Confirm whether the result comes from operating gains or leverage.";
+      } else if (roe < 5) {
+        text = "Weak ROE. Shareholders would likely demand a better return for the risk taken.";
+      } else if (changedComponent === "initial") {
+        text = roe >= 20
+          ? "ROE is healthy. Check whether operations or leverage are doing most of the work."
+          : "ROE sits in the middle zone. Inspect margin, turnover, and leverage before judging quality.";
+      } else if (changedComponent === "npm" && direction > 0) {
+        text = "Higher margins - the firm is keeping more of each sale.";
+      } else if (changedComponent === "npm" && direction < 0) {
+        text = "Thinner margins - costs are eating into revenue.";
+      } else if (changedComponent === "at" && direction > 0) {
+        text = "Assets working harder. The firm generates more revenue per rupee of assets.";
+      } else if (changedComponent === "at" && direction < 0) {
+        text = "Lower turnover. Either assets are underutilized, or this is a capital-heavy industry.";
+      } else if (changedComponent === "em" && direction > 0) {
+        text = "More leverage. ROE rises, but so does financial risk.";
+      } else if (changedComponent === "em" && direction < 0) {
+        text = "Deleveraging. Lower risk. Equity is doing more of the work.";
+      }
+
+      narrative.textContent = text;
+    }
+
+    function highlightDriver(changedComponent) {
+      Object.entries(formulaTerms).forEach(([key, element]) => {
+        element.classList.toggle("is-hot", key === changedComponent);
+      });
+      Object.entries(sliderGroups).forEach(([key, element]) => {
+        element.classList.toggle("is-hot", key === changedComponent);
+      });
+      formulaRoe.classList.toggle("is-hot", changedComponent !== "initial");
+    }
+
+    function update(changedComponent = "initial") {
+      const npm = parseFloat(sliderNpm.value);
+      const at = parseFloat(sliderAt.value);
+      const em = parseFloat(sliderEm.value);
+      const roe = calculateROE(npm, at, em);
+      const direction = changedComponent === "initial" ? 0 : parseFloat({ npm, at, em }[changedComponent]) - previous[changedComponent];
+
+      roeValue.textContent = `${roe.toFixed(1)}%`;
+      if (roe < 0) {
+        roeValue.style.color = "var(--color-negative)";
+      } else if (roe < 10) {
+        roeValue.style.color = "var(--text-secondary)";
+      } else if (roe < 20) {
+        roeValue.style.color = "var(--text-primary)";
+      } else {
+        roeValue.style.color = "var(--text-accent)";
+      }
+
+      roeValue.classList.remove("bump");
+      requestAnimationFrame(() => {
+        roeValue.classList.add("bump");
+      });
+
+      valNpm.textContent = `${npm.toFixed(1)}%`;
+      valAt.textContent = `${at.toFixed(2)}x`;
+      valEm.textContent = `${em.toFixed(1)}x`;
+      emWarning.style.display = em > 4 ? "block" : "none";
+
+      updateContributionBar(npm, at, em);
+      updateNarrative(changedComponent, npm, at, em, roe, direction);
+      highlightDriver(changedComponent);
+
+      previous.npm = npm;
+      previous.at = at;
+      previous.em = em;
+    }
+
+    function setScenario(npm, at, em) {
+      sliderNpm.value = npm;
+      sliderAt.value = at;
+      sliderEm.value = em;
+      previous.npm = parseFloat(npm);
+      previous.at = parseFloat(at);
+      previous.em = parseFloat(em);
+      update("initial");
+    }
+
+    [sliderNpm, sliderAt, sliderEm].forEach((slider) => {
+      slider.addEventListener("input", (event) => {
+        update(event.target.dataset.component);
+      });
+    });
+
+    resetBtn.addEventListener("click", () => {
+      setScenario(defaults.npm, defaults.at, defaults.em);
+    });
+
+    presetBtns.forEach((button) => {
+      button.addEventListener("click", () => {
+        setScenario(button.dataset.npm, button.dataset.at, button.dataset.em);
+      });
+    });
+
+    modelButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const selected = button.dataset.modelButton;
+        document.body.dataset.model = selected;
+        modelButtons.forEach((item) => {
+          const active = item.dataset.modelButton === selected;
+          item.classList.toggle("is-active", active);
+          item.setAttribute("aria-pressed", String(active));
+        });
+      });
+    });
+
+    accordionButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const column = button.closest(".col");
+        const isOpen = column.classList.toggle("is-open");
+        button.setAttribute("aria-expanded", String(isOpen));
+      });
+    });
+
+    update();
+  </script>
+</body>
+</html>
